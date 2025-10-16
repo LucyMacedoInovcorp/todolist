@@ -65,8 +65,14 @@
                         </div>
 
                         <!-- Formulário de edição -->
-                        <form v-if="tarefa.editando" @submit.prevent="salvarEdicao(tarefa)" class="editar-tarefa-form">
-                            <div class="form-inputs-edicao mb-3">
+                        <form v-if="tarefa.editando" @submit.prevent="salvarEdicao(tarefa)" class="editar-tarefa-form flex items-center w-full gap-3">
+                            <input 
+                                type="checkbox" 
+                                :checked="tarefa.concluida" 
+                                disabled
+                                class="progresso mt-1" 
+                            />
+                            <div class="form-inputs-edicao flex-1">
                                 <input 
                                     type="text" 
                                     v-model="tarefa.tituloTemp" 
@@ -80,12 +86,12 @@
                                     rows="2"
                                 ></textarea>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 ml-auto">
                                 <button type="submit" class="todolist-button">
                                     <img src="/images/check.png" alt="Confirmar" class="w-4 h-4">
                                 </button>
-                                <button type="button" @click="cancelarEdicao(tarefa)" class="todolist-button bg-gray-500">
-                                    ✕
+                                <button type="button" @click="cancelarEdicao(tarefa)" class="todolist-button">
+                                    <img src="/images/excluir.png" alt="Cancelar" class="w-4 h-4">
                                 </button>
                             </div>
                         </form>

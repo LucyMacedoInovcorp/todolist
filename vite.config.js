@@ -25,4 +25,10 @@ export default defineConfig({
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },
+        server: {
+        hmr: true,
+        watch: {
+          usePolling: true
+        }
+    }
 });

@@ -18,11 +18,15 @@ class TarefaController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descricao' => 'nullable|string',
+            'dataVencimento' => 'nullable|date',
+            'prioridade' => 'nullable|in:baixa,media,alta',
         ]);
 
         $tarefa = Tarefa::create([
             'titulo' => $request->titulo,
             'descricao' => $request->descricao,
+            'data_vencimento' => $request->dataVencimento,
+            'prioridade' => $request->prioridade ?? 'media',
             'concluida' => false,
         ]);
 
@@ -35,9 +39,16 @@ class TarefaController extends Controller
             'titulo' => 'sometimes|required|string|max:255',
             'descricao' => 'nullable|string',
             'concluida' => 'sometimes|boolean',
+            'dataVencimento' => 'nullable|date',
+            'prioridade' => 'nullable|in:baixa,media,alta',
         ]);
 
-        $tarefa->update($request->only(['titulo', 'descricao', 'concluida']));
+        $updateData = $request->only(['titulo', 'descricao', 'concluida', 'prioridade']);
+        if ($request->has('dataVencimento')) {
+            $updateData['data_vencimento'] = $request->dataVencimento;
+        }
+
+        $tarefa->update($updateData);
 
         return response()->json($tarefa);
     }

@@ -8,7 +8,7 @@
             </h1>
             
             <!-- Conteúdo -->
-            <div class="todolist-conteudo space-y-4">
+            <div class="w space-y-4">
                 <!-- Formulário da lista -->
                 <div class="flex items-center justify-center">
                     <form @submit.prevent="adicionarTarefa" class="todolist-form">
@@ -16,6 +16,20 @@
                         <div class="form-inputs">
                             <input type="text" v-model="novaTarefa.titulo" placeholder="Título da tarefa" class="todolist-input-titulo" />
                             <textarea v-model="novaTarefa.descricao" placeholder="Descrição (opcional)" class="todolist-input-descricao" rows="2"></textarea>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label class="form-label">Data de Vencimento:</label>
+                                    <input type="date" v-model="novaTarefa.dataVencimento" class="todolist-input-date" />
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-label">Prioridade:</label>
+                                    <select v-model="novaTarefa.prioridade" class="todolist-input-select">
+                                        <option value="baixa">Baixa</option>
+                                        <option value="media">Média</option>
+                                        <option value="alta">Alta</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <button type="submit" class="todolist-button"><img src="/images/plus.png" alt="Adicionar" class="w-4 h-4"></button>
                     </form>
@@ -43,6 +57,9 @@
                                         @click="editarTarefa(tarefa)"
                                     >
                                         {{ tarefa.titulo }}
+                                        <span v-if="tarefa.prioridade" :class="['prioridade-badge', `prioridade-${tarefa.prioridade}`]">
+                                            {{ tarefa.prioridade.toUpperCase() }}
+                                        </span>
                                     </h3>
                                     <p 
                                         v-if="tarefa.descricao" 
@@ -52,6 +69,11 @@
                                     >
                                         {{ tarefa.descricao }}
                                     </p>
+                                    <div v-if="tarefa.data_vencimento" class="tarefa-meta">
+                                        <span class="vencimento" :class="{ 'vencida': isVencida(tarefa.data_vencimento), 'vence-hoje': venceHoje(tarefa.data_vencimento) }">
+                                            📅 {{ formatarData(tarefa.data_vencimento) }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="acoes flex gap-2 ml-auto">
@@ -81,10 +103,18 @@
                                 />
                                 <textarea 
                                     v-model="tarefa.descricaoTemp" 
-                                    class="editar-descricao-input" 
+                                    class="editar-descricao-input mb-2" 
                                     placeholder="Descrição" 
                                     rows="2"
                                 ></textarea>
+                                <div class="form-row-edit">
+                                    <input type="date" v-model="tarefa.dataVencimentoTemp" class="editar-date-input" />
+                                    <select v-model="tarefa.prioridadeTemp" class="editar-select-input">
+                                        <option value="baixa">Baixa</option>
+                                        <option value="media">Média</option>
+                                        <option value="alta">Alta</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="flex gap-2 ml-auto">
                                 <button type="submit" class="todolist-button">
@@ -112,7 +142,9 @@ export default {
             tarefas: [],
             novaTarefa: {
                 titulo: '',
-                descricao: ''
+                descricao: '',
+                dataVencimento: '',
+                prioridade: 'media'
             }
         }
     },
@@ -141,14 +173,16 @@ export default {
                     },
                     body: JSON.stringify({
                         titulo: this.novaTarefa.titulo,
-                        descricao: this.novaTarefa.descricao
+                        descricao: this.novaTarefa.descricao,
+                        dataVencimento: this.novaTarefa.dataVencimento,
+                        prioridade: this.novaTarefa.prioridade
                     })
                 });
 
                 if (response.ok) {
                     const novaTarefa = await response.json();
                     this.tarefas.unshift(novaTarefa);
-                    this.novaTarefa = { titulo: '', descricao: '' };
+                    this.novaTarefa = { titulo: '', descricao: '', dataVencimento: '', prioridade: 'media' };
                 }
             } catch (error) {
                 console.error('Erro ao adicionar tarefa:', error);
@@ -181,12 +215,16 @@ export default {
             tarefa.editando = true;
             tarefa.tituloTemp = tarefa.titulo;
             tarefa.descricaoTemp = tarefa.descricao;
+            tarefa.dataVencimentoTemp = tarefa.data_vencimento;
+            tarefa.prioridadeTemp = tarefa.prioridade || 'media';
         },
 
         cancelarEdicao(tarefa) {
             tarefa.editando = false;
             delete tarefa.tituloTemp;
             delete tarefa.descricaoTemp;
+            delete tarefa.dataVencimentoTemp;
+            delete tarefa.prioridadeTemp;
         },
 
         async salvarEdicao(tarefa) {
@@ -199,7 +237,9 @@ export default {
                     },
                     body: JSON.stringify({
                         titulo: tarefa.tituloTemp,
-                        descricao: tarefa.descricaoTemp
+                        descricao: tarefa.descricaoTemp,
+                        dataVencimento: tarefa.dataVencimentoTemp,
+                        prioridade: tarefa.prioridadeTemp
                     })
                 });
 
@@ -209,6 +249,8 @@ export default {
                     tarefa.editando = false;
                     delete tarefa.tituloTemp;
                     delete tarefa.descricaoTemp;
+                    delete tarefa.dataVencimentoTemp;
+                    delete tarefa.prioridadeTemp;
                 }
             } catch (error) {
                 console.error('Erro ao salvar edição:', error);
@@ -232,6 +274,66 @@ export default {
             } catch (error) {
                 console.error('Erro ao excluir tarefa:', error);
             }
+        },
+
+        formatarData(data) {
+            if (!data) return '';
+            
+            let date;
+            // Tenta diferentes formatos de data
+            if (data.includes('-')) {
+                // Formato YYYY-MM-DD (do input date e banco)
+                const [ano, mes, dia] = data.split('-');
+                date = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+            } else {
+                // Tenta parseamento direto
+                date = new Date(data);
+            }
+            
+            // Verifica se a data é válida
+            if (isNaN(date.getTime())) {
+                return 'Data inválida';
+            }
+            
+            return date.toLocaleDateString('pt-BR');
+        },
+
+        isVencida(data) {
+            if (!data) return false;
+            
+            let vencimento;
+            if (data.includes('-')) {
+                const [ano, mes, dia] = data.split('-');
+                vencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+            } else {
+                vencimento = new Date(data);
+            }
+            
+            if (isNaN(vencimento.getTime())) return false;
+            
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            vencimento.setHours(0, 0, 0, 0);
+            return vencimento < hoje;
+        },
+
+        venceHoje(data) {
+            if (!data) return false;
+            
+            let vencimento;
+            if (data.includes('-')) {
+                const [ano, mes, dia] = data.split('-');
+                vencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+            } else {
+                vencimento = new Date(data);
+            }
+            
+            if (isNaN(vencimento.getTime())) return false;
+            
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            vencimento.setHours(0, 0, 0, 0);
+            return vencimento.getTime() === hoje.getTime();
         }
     }
 }

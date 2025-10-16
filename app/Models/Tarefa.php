@@ -9,10 +9,13 @@ class Tarefa extends Model
     protected $fillable = [
         'titulo',
         'descricao',
-        'concluida'
+        'concluida',
+        'data_vencimento',
+        'prioridade'
     ];
 
     protected $casts = [
         'concluida' => 'boolean',
+        'data_vencimento' => 'date',
     ];
 }

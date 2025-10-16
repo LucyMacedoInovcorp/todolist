@@ -10,7 +10,7 @@
             <!-- Conteúdo -->
             <div class="w space-y-4">
                 <!-- Formulário da lista -->
-                <div class="flex items-center justify-center">
+                <div class="todolist-wrapper flex items-center justify-center">
                     <form @submit.prevent="adicionarTarefa" class="todolist-form">
                         
                         <div class="form-inputs">
@@ -30,12 +30,16 @@
                                     </select>
                                 </div>
                             </div>
+                            <button type="submit" class="todolist-button-bottom">
+                                <img src="/images/plus.png" alt="Adicionar" class="w-4 h-4 mr-2">
+                                Adicionar Tarefa
+                            </button>
                         </div>
-                        <button type="submit" class="todolist-button"><img src="/images/plus.png" alt="Adicionar" class="w-4 h-4"></button>
                     </form>
                 </div>
                 <!-- Lista de tarefas -->
-                <div class="todolist-tarefas min-h-20 conteudo-dinamico rounded-lg px-4 py-3">
+                <div class="todolist-wrapper">
+                    <div class="todolist-tarefas min-h-20 conteudo-dinamico rounded-lg px-4 py-3">
                     <div v-if="tarefas.length === 0" class="text-center text-gray-500 italic">
                         Nenhuma tarefa adicionada ainda.
                     </div>
@@ -126,6 +130,7 @@
                             </div>
                         </form>
                     </div>
+                </div>
                 </div>
 
 

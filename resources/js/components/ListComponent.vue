@@ -30,13 +30,24 @@
                                     </select>
                                 </div>
                             </div>
-                            <button type="submit" class="todolist-button-bottom">
-                                <img src="/images/plus.png" alt="Adicionar" class="w-4 h-4 mr-2">
+                            <BotaoUniversal 
+                                type="submit" 
+                                variante="bottom"
+                                icone="/images/plus.png" 
+                                alt-icone="Adicionar"
+                            >
                                 Adicionar Tarefa
-                            </button>
+                            </BotaoUniversal>
                         </div>
                     </form>
                 </div>
+
+                <!-- Filtros -->
+                <FiltroTarefas 
+                    :filtros="filtros" 
+                    @atualizar-filtros="atualizarFiltros"
+                />
+
                 <!-- Lista de tarefas -->
                 <div class="todolist-wrapper">
                     <div class="todolist-tarefas min-h-20 conteudo-dinamico rounded-lg px-4 py-3">
@@ -44,7 +55,7 @@
                         Nenhuma tarefa adicionada ainda.
                     </div>
                     
-                    <div v-for="tarefa in tarefas" :key="tarefa.id" class="todolist-tarefa mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
+                    <div v-for="tarefa in tarefasFiltradas" :key="tarefa.id" class="todolist-tarefa mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
                         <!-- Visualização normal -->
                         <div v-if="!tarefa.editando" class="flex items-center justify-between w-full gap-3">
                             <div class="flex items-start gap-3 flex-1">
@@ -58,40 +69,51 @@
                                     <h3 
                                         class="tarefa-titulo cursor-pointer" 
                                         :class="{ 'line-through opacity-60': tarefa.concluida }"
-                                        @click="editarTarefa(tarefa)"
+                                        @click="mostrarDetalhes(tarefa)"
                                     >
                                         {{ tarefa.titulo }}
-                                        <span v-if="tarefa.prioridade" :class="['prioridade-badge', `prioridade-${tarefa.prioridade}`]">
-                                            {{ tarefa.prioridade.toUpperCase() }}
-                                        </span>
                                     </h3>
                                     <p 
                                         v-if="tarefa.descricao" 
                                         class="tarefa-descricao cursor-pointer"
                                         :class="{ 'line-through opacity-60': tarefa.concluida }"
-                                        @click="editarTarefa(tarefa)"
+                                        @click="mostrarDetalhes(tarefa)"
                                     >
                                         {{ tarefa.descricao }}
                                     </p>
-                                    <div v-if="tarefa.data_vencimento" class="tarefa-meta">
-                                        <span class="vencimento" :class="{ 'vencida': isVencida(tarefa.data_vencimento), 'vence-hoje': venceHoje(tarefa.data_vencimento) }">
+                                    <div v-if="tarefa.data_vencimento || tarefa.prioridade" class="tarefa-meta">
+                                        <span v-if="tarefa.data_vencimento" class="vencimento" :class="{ 'vencida': isVencida(tarefa.data_vencimento), 'vence-hoje': venceHoje(tarefa.data_vencimento) }">
                                             📅 {{ formatarData(tarefa.data_vencimento) }}
+                                        </span>
+                                        <span v-if="tarefa.prioridade" :class="['prioridade-badge', `prioridade-${tarefa.prioridade}`]">
+                                            {{ formatarPrioridade(tarefa.prioridade) }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                             <div class="acoes flex gap-2 ml-auto">
-                                <a href="#" @click.prevent="editarTarefa(tarefa)" class="editar">
-                                    <img src="/images/lapiseditar.png" alt="Lápis editar" class="w-4 h-4 icon-destaque">
-                                </a>
-                                <a href="#" @click.prevent="excluirTarefa(tarefa.id)" class="excluir">
-                                    <img src="/images/lapisexcluir.png" alt="Lápis excluir" class="w-4 h-4 icon-destaque">
-                                </a>
+                                <BotaoUniversal 
+                                    icone="/images/lapiseditar.png" 
+                                    alt-icone="Editar" 
+                                    titulo="Editar tarefa"
+                                    variante="editar"
+                                    apenas-icone
+                                    @click="editarTarefa(tarefa)"
+                                />
+                                <BotaoUniversal 
+                                    icone="/images/lapisexcluir.png" 
+                                    alt-icone="Excluir" 
+                                    titulo="Excluir tarefa"
+                                    variante="excluir"
+                                    apenas-icone
+                                    @click="excluirTarefa(tarefa.id)"
+                                />
                             </div>
                         </div>
 
                         <!-- Formulário de edição -->
-                        <form v-if="tarefa.editando" @submit.prevent="salvarEdicao(tarefa)" class="editar-tarefa-form flex items-center w-full gap-3">
+
+                        <div v-if="tarefa.editando" class="editar-tarefa-form flex items-center w-full gap-3">
                             <input 
                                 type="checkbox" 
                                 :checked="tarefa.concluida" 
@@ -121,18 +143,37 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 ml-auto">
-                                <button type="submit" class="todolist-button">
-                                    <img src="/images/check.png" alt="Confirmar" class="w-4 h-4">
-                                </button>
-                                <button type="button" @click="cancelarEdicao(tarefa)" class="todolist-button">
-                                    <img src="/images/excluir.png" alt="Cancelar" class="w-4 h-4">
-                                </button>
+                                <BotaoUniversal 
+                                    icone="/images/check.png" 
+                                    alt-icone="Confirmar edição"
+                                    titulo="Confirmar edição"
+                                    variante="success"
+                                    apenas-icone
+                                    @click="salvarEdicao(tarefa)"
+                                />
+                                <BotaoUniversal 
+                                    icone="/images/excluir.png" 
+                                    alt-icone="Cancelar edição"
+                                    titulo="Cancelar edição"
+                                    variante="excluir"
+                                    apenas-icone
+                                    @click="cancelarEdicao(tarefa)"
+                                />
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
                 </div>
 
+                <!-- Modal de Detalhes -->
+                <DetalheTarefa
+                    :tarefa="tarefaSelecionada || {}"
+                    :mostrar="mostrarModalDetalhes"
+                    @fechar="fecharDetalhes"
+                    @editar="editarTarefa"
+                    @toggle="toggleTarefa"
+                    @excluir="excluirTarefa"
+                />
 
             </div>
         </div>
@@ -140,8 +181,17 @@
 </template>
 
 <script>
+import FiltroTarefas from './FiltroTarefas.vue';
+import DetalheTarefa from './DetalheTarefa.vue';
+import BotaoUniversal from './BotaoUniversal.vue';
+
 export default {
     name: 'ListComponent',
+    components: {
+        FiltroTarefas,
+        DetalheTarefa,
+        BotaoUniversal
+    },
     data() {
         return {
             tarefas: [],
@@ -150,6 +200,14 @@ export default {
                 descricao: '',
                 dataVencimento: '',
                 prioridade: 'media'
+            },
+            tarefaSelecionada: null,
+            mostrarModalDetalhes: false,
+            
+            filtros: {
+            estado: 'todas', 
+            prioridade: 'todas', 
+            dataVencimento: 'todas' 
             }
         }
     },
@@ -209,6 +267,11 @@ export default {
                     const index = this.tarefas.findIndex(t => t.id === id);
                     if (index !== -1) {
                         this.tarefas[index] = tarefaAtualizada;
+                        
+                        // Se a tarefa atualizada é a que está sendo mostrada no modal, atualiza também
+                        if (this.tarefaSelecionada && this.tarefaSelecionada.id === id) {
+                            this.tarefaSelecionada = tarefaAtualizada;
+                        }
                     }
                 }
             } catch (error) {
@@ -339,8 +402,71 @@ export default {
             hoje.setHours(0, 0, 0, 0);
             vencimento.setHours(0, 0, 0, 0);
             return vencimento.getTime() === hoje.getTime();
+        },
+
+        formatarPrioridade(prioridade) {
+            const prioridadeMap = {
+                'baixa': 'BAIXA',
+                'media': 'MÉDIA',
+                'alta': 'ALTA'
+            };
+            return prioridadeMap[prioridade] || prioridade.toUpperCase();
+        },
+
+        atualizarFiltros(evento) {
+            if (evento.campo === 'reset') {
+                this.filtros = evento.valor;
+            } else {
+                this.filtros[evento.campo] = evento.valor;
+            }
+        },
+
+        mostrarDetalhes(tarefa) {
+            this.tarefaSelecionada = tarefa;
+            this.mostrarModalDetalhes = true;
+        },
+
+        fecharDetalhes() {
+            this.mostrarModalDetalhes = false;
+            this.tarefaSelecionada = null;
         }
+    },
+    computed: {
+    tarefasFiltradas() {
+        let resultado = this.tarefas;
+        
+        // Filtro por estado (pendente/concluída)
+        if (this.filtros.estado !== 'todas') {
+            if (this.filtros.estado === 'pendentes') {
+                resultado = resultado.filter(tarefa => !tarefa.concluida);
+            } else if (this.filtros.estado === 'concluidas') {
+                resultado = resultado.filter(tarefa => tarefa.concluida);
+            }
+        }
+        
+        // Filtro por prioridade
+        if (this.filtros.prioridade !== 'todas') {
+            resultado = resultado.filter(tarefa => tarefa.prioridade === this.filtros.prioridade);
+        }
+        
+        // Filtro por data de vencimento
+        if (this.filtros.dataVencimento !== 'todas') {
+            resultado = resultado.filter(tarefa => {
+                if (!tarefa.data_vencimento) return false;
+                
+                if (this.filtros.dataVencimento === 'vencidas') {
+                    return this.isVencida(tarefa.data_vencimento);
+                } else if (this.filtros.dataVencimento === 'hoje') {
+                    return this.venceHoje(tarefa.data_vencimento);
+                } else if (this.filtros.dataVencimento === 'futuras') {
+                    return !this.isVencida(tarefa.data_vencimento) && !this.venceHoje(tarefa.data_vencimento);
+                }
+            });
+        }
+        
+        return resultado;
     }
+}
 }
 </script>
 

@@ -11,6 +11,7 @@ Route::get('/user', function (Request $request) {
 // Rotas da API para tarefas
 Route::get('/tarefas', [TarefaController::class, 'index']);
 Route::post('/tarefas', [TarefaController::class, 'store']);
+Route::get('/tarefas/{tarefa}', [TarefaController::class, 'show']);
 Route::put('/tarefas/{tarefa}', [TarefaController::class, 'update']);
 Route::delete('/tarefas/{tarefa}', [TarefaController::class, 'destroy']);
 Route::patch('/tarefas/{tarefa}/toggle', [TarefaController::class, 'toggleComplete']);

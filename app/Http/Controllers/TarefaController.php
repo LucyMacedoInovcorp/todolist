@@ -7,9 +7,36 @@ use Illuminate\Http\Request;
 
 class TarefaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tarefas = Tarefa::orderBy('created_at', 'desc')->get();
+        $query = Tarefa::query();
+
+        // Filtro por estado (pendente/concluida)
+        if ($request->has('estado')) {
+            if ($request->estado === 'pendente') {
+                $query->where('concluida', false);
+            } elseif ($request->estado === 'concluida') {
+                $query->where('concluida', true);
+            }
+        }
+
+        // Filtro por prioridade
+        if ($request->has('prioridade')) {
+            $query->where('prioridade', $request->prioridade);
+        }
+
+        // Filtro por data de vencimento específica
+        if ($request->has('data_vencimento')) {
+            $query->whereDate('data_vencimento', $request->data_vencimento);
+        }
+
+        // Filtro por tarefas vencidas
+        if ($request->has('vencidas') && $request->vencidas === 'true') {
+            $query->where('data_vencimento', '<', now()->toDateString())
+                  ->where('concluida', false);
+        }
+
+        $tarefas = $query->orderBy('created_at', 'desc')->get();
         return response()->json($tarefas);
     }
 
@@ -31,6 +58,11 @@ class TarefaController extends Controller
         ]);
 
         return response()->json($tarefa, 201);
+    }
+
+    public function show(Tarefa $tarefa)
+    {
+        return response()->json($tarefa);
     }
 
     public function update(Request $request, Tarefa $tarefa)

@@ -728,6 +728,33 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
     margin-bottom: 1rem;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     transition: all 0.3s ease;
+    overflow: hidden; /* Evitar overflow horizontal */
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Indicação sutil de scroll vertical em dispositivos pequenos */
+@media (max-width: 480px) {
+    .filtros-expandidos::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%;
+        height: 15px;
+        background: linear-gradient(to top, rgba(250, 251, 252, 0.9), transparent);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .filtros-expandidos:hover::after,
+    .filtros-expandidos:focus-within::after {
+        opacity: 1;
+    }
 }
 
 .filtros-header {
@@ -779,7 +806,7 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
 
 .filtros-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 0.75rem;
     align-items: end;
     margin-top: 0.75rem;
@@ -789,15 +816,45 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
     transition: all 0.3s ease;
 }
 
+/* Quando expandido, permitir scroll vertical invisível */
 .filtros-expandidos {
     opacity: 1;
     max-height: 200px;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scroll vertical */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+/* Webkit browsers (Chrome, Safari) - scroll invisível */
+.filtros-expandidos::-webkit-scrollbar {
+    display: none;
+}
+
+/* Melhorar scroll vertical em grid quando necessário */
+.filtros-grid {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+.filtros-grid::-webkit-scrollbar {
+    display: none;
 }
 
 .filtro-campo {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+/* Padding para botão limpar filtros APENAS em telas maiores (não mobile) */
+@media (min-width: 769px) {
+    .filtro-campo:last-child {
+        padding: 0 0.5rem 0.5rem 0; /* Padding na direita e inferior para evitar corte */
+        margin-bottom: 0.25rem;
+    }
 }
 
 .filtro-label {
@@ -846,6 +903,37 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
+    min-height: 38px; /* Altura mínima para toque */
+}
+
+/* Melhor tamanho para toque em dispositivos móveis */
+@media (max-width: 768px) {
+    .limpar-filtros-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.75rem;
+        min-height: 40px;
+        max-width: 180px; /* Limitar largura máxima */
+        margin: 0 auto; /* Centralizar */
+    }
+}
+
+/* Ajustes específicos para telas muito pequenas */
+@media (max-width: 480px) {
+    .limpar-filtros-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.7rem;
+        min-height: 36px;
+        max-width: 150px;
+        /* Garantir que as bordas de foco não saiam da tela */
+        margin: 0.25rem auto;
+    }
+    
+    /* Ajustar container do botão para acomodar bordas de foco */
+    .filtro-campo:last-child {
+        padding: 0 0.5rem 1rem 0.5rem; /* Espaço para bordas de foco + padding inferior */
+        margin-bottom: 0.5rem; /* Margem adicional */
+        box-sizing: border-box;
+    }
 }
 
 .limpar-filtros-btn:hover {
@@ -854,14 +942,39 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
     border-color: #D1D5DB;
 }
 
+/* Hover otimizado para telas pequenas */
+@media (max-width: 480px) {
+    .limpar-filtros-btn:hover {
+        /* Remover qualquer efeito que possa sair da área */
+        transform: none;
+        box-shadow: none;
+        outline: none;
+    }
+}
+
 .limpar-filtros-btn:active {
     transform: translateY(0);
+}
+
+/* Bordas de foco específicas para o botão limpar filtros */
+.limpar-filtros-btn:focus {
+    outline: 2px solid #2563EB !important;
+    outline-offset: 1px !important; /* Menor offset para telas pequenas */
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3) !important; /* Sombra menor */
+}
+
+/* Em telas pequenas, bordas ainda menores */
+@media (max-width: 480px) {
+    .limpar-filtros-btn:focus {
+        outline-offset: 0px !important; /* Sem offset */
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4) !important; /* Sombra bem pequena */
+    }
 }
 
 /* Responsividade dos filtros */
 @media (max-width: 768px) {
     .filtros-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
     }
     
@@ -869,16 +982,70 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
         padding: 0.625rem;
         margin-bottom: 0.75rem;
     }
+    
+    .filtros-expandidos {
+        max-height: 350px; /* Aumentado para acomodar melhor os botões */
+    }
+}
+
+@media (max-width: 600px) {
+    .filtros-grid {
+        /* Layout vertical também para telas médias */
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .filtro-campo {
+        flex: none;
+        width: 100%;
+    }
+    
+    /* Botão limpar filtros */
+    .filtro-campo:last-child {
+        flex: none;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding-bottom: 1rem; /* Espaço extra para não cortar o botão */
+        margin-bottom: 0.5rem; /* Margem adicional */
+    }
+    
+    .filtros-expandidos {
+        max-height: 330px; /* Aumentado para acomodar melhor os botões */
+        overflow-x: hidden;
+        overflow-y: auto; /* Scroll vertical */
+    }
 }
 
 @media (max-width: 480px) {
     .filtros-grid {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
+        /* Layout vertical em telas pequenas */
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .filtro-campo {
+        flex: none;
+        width: 100%;
+    }
+    
+    /* Botão limpar filtros */
+    .filtro-campo:last-child {
+        flex: none;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding-bottom: 1rem; /* Espaço extra para não cortar o botão */
+        margin-bottom: 0.5rem; /* Margem adicional */
     }
     
     .filtros-container {
-        padding: 0.5rem;
+        padding: 0.5rem 0.5rem 1rem 0.5rem; /* Padding inferior maior */
+        /* Garantir espaço para bordas de foco */
+        margin: 0 0.25rem 1rem 0.25rem;
     }
     
     .filtros-titulo {
@@ -889,4 +1056,275 @@ h1, h2, h3, h4, h5, h6, p, div, span, button, input {
         font-size: 0.7rem;
         padding: 0.1rem 0.3rem;
     }
+    
+    .filtros-expandidos {
+        max-height: 350px; /* Altura para scroll vertical - aumentada para acomodar botões */
+        overflow-x: hidden;
+        overflow-y: auto; /* Scroll vertical */
+    }
+}
+
+@media (max-width: 360px) {
+    /* Para telas muito pequenas como iPhone SE */
+    .filtro-label {
+        font-size: 0.7rem;
+    }
+    
+    .filtro-select {
+        font-size: 0.8rem;
+        padding: 0.4rem !important;
+    }
+    
+    .filtros-expandidos {
+        max-height: 450px;
+    }
+}
+
+/* ===========================================
+   🔧 ESTILOS DE ACESSIBILIDADE WCAG 2.1
+   =========================================== */
+
+/* Classes utilitárias para screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus visível para navegação por teclado */
+button:focus,
+input:focus,
+select:focus,
+a:focus,
+.botao-universal:focus,
+.botao-icone:focus {
+    outline: 2px solid #2563EB !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Estados de erro claramente visíveis */
+[aria-invalid="true"] {
+    border-color: #DC2626 !important;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2) !important;
+}
+
+/* Garantir contraste adequado para mensagens de erro */
+.error-message {
+    color: #DC2626;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Estados hover com contraste adequado */
+.task-item:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+.task-item:focus-within {
+    background: #EFF6FF;
+    border-color: #3B82F6;
+}
+
+/* Skip links para navegação rápida */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #2563EB;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 9999;
+    font-weight: 600;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
+/* Melhor contraste para estados desabilitados */
+.botao-disabled,
+[disabled] {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
+.botao-disabled:focus,
+[disabled]:focus {
+    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.3) !important;
+}
+
+/* Estilos para formulário acessível */
+.form-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.form-legend {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 1rem;
+    padding: 0;
+    font-family: "Playfair Display", serif;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-family: "Playfair Display", serif;
+}
+
+.required-indicator {
+    color: #DC2626;
+    font-weight: 700;
+    margin-left: 0.25rem;
+}
+
+/* Estados de erro para campos */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+    border-color: #DC2626 !important;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2) !important;
+}
+
+.error-message {
+    color: #DC2626;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-family: "Playfair Display", serif;
+}
+
+/* Focus melhorado para campos de formulário */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid #2563EB !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Estados válidos */
+input[aria-invalid="false"]:not(:placeholder-shown),
+textarea[aria-invalid="false"]:not(:placeholder-shown),
+select[aria-invalid="false"] {
+    border-color: #10B981;
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+/* Corrigir width dos inputs do formulário acessível */
+.form-group .todolist-input-titulo,
+.form-group .todolist-input-descricao {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Garantir que o form-group ocupe toda a largura */
+.form-group {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Ajustar form-inputs container */
+.form-inputs {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ========================================
+   LISTA SEMÂNTICA DE TAREFAS - WCAG 2.1
+   ======================================== */
+
+/* Lista semântica de tarefas */
+.task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Item individual da lista */
+.task-list li[role="listitem"] {
+    display: block;
+    position: relative;
+}
+
+/* Classe auxiliar para títulos de seção acessíveis */
+.tasks-section-title {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Melhor foco para itens de lista */
+.task-list li[role="listitem"]:focus-within {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Semântica para checkbox de completar tarefa */
+.task-list input[type="checkbox"] {
+    margin-right: 0.75rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: #10B981;
+}
+
+/* Melhor acessibilidade para títulos de tarefa */
+.task-list h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* Descrições de tarefa mais acessíveis */
+.task-list p {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: #6B7280;
 }

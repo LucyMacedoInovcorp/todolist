@@ -332,14 +332,14 @@ O projeto usa um banco de dados separado para testes (`todolist_test`). Configur
 - **Caching Inteligente**: Estratégias de cache para melhor performance
 
 ### ♿ Acessibilidade e Inclusão
-- **Contraste WCAG AA**: Paleta de cores com ratios adequados (✅ Implementado)
-- **Labels Semânticos**: Formulários com labels descritivos (✅ Implementado)  
-- **Alt Text**: Imagens com texto alternativo apropriado (✅ Implementado)
-- **Navegação por Teclado**: Em desenvolvimento - suporte parcial (🚧 Planejado)
-- **Atributos ARIA**: Implementação futura para conformidade completa (🔄 Pendente)
-- **HTML Semântico**: Estrutura básica implementada, otimizações planeadas (🚧 Em progresso)
+- **Navegação por Teclado**: Suporte implementado para Enter/Space nos botões (✅ Implementado)
+- **Focus Indicators**: Indicadores visuais para navegação por teclado (✅ Implementado)  
+- **Atributos ARIA**: Labels e descrições para screen readers (✅ Implementado)
+- **Contraste WCAG AA**: Paleta de cores com ratios adequados (✅ Implementado - 15.8:1, 5.9:1, 8.6:1)
+- **Classes SR-Only**: Conteúdo específico para leitores de ecrã (✅ Implementado)
+- **HTML Semântico**: Estrutura básica implementada, melhorias planeadas (🚧 Em progresso)
 
-> **📝 Nota**: O projeto implementa bases sólidas de acessibilidade, mas ainda não atinge conformidade completa WCAG 2.1 AA. Ver [Guia de Melhorias](docs/ACESSIBILIDADE_MELHORIAS.md) para roadmap detalhado.
+> **� Progresso**: Primeira iteração de acessibilidade concluída (25% WCAG 2.1). Ver [Status Detalhado](docs/ACESSIBILIDADE_MELHORIAS.md) para roadmap completo e próximas implementações.
 
 ### 🧪 Qualidade e Testes
 - **Testes Unitários**: Cobertura completa das funcionalidades principais

@@ -1,5 +1,6 @@
 <template>
-    <div class="pagina-principal min-h-screen p-8 flex items-center justify-center">
+
+<div class="pagina-principal min-h-screen p-8 flex items-center justify-center">
         <div class="todolist-container">
             <h1 class="text-3xl font-bold mb-8 text-center flex items-center justify-center gap-4">
                 <!-- Imagem e título principal -->
@@ -9,36 +10,110 @@
             
             <!-- Conteúdo -->
             <div class="w space-y-4">
-                <!-- Formulário da lista -->
+                <!-- Formulário da lista com acessibilidade -->
                 <div class="todolist-wrapper flex items-center justify-center">
-                    <form @submit.prevent="adicionarTarefa" class="todolist-form">
+                    <form @submit.prevent="adicionarTarefa" 
+                          class="todolist-form" 
+                          role="form" 
+                          aria-labelledby="form-title"
+                          aria-describedby="form-description">
                         
-                        <div class="form-inputs">
-                            <input type="text" v-model="novaTarefa.titulo" placeholder="Título da tarefa" class="todolist-input-titulo" />
-                            <textarea v-model="novaTarefa.descricao" placeholder="Descrição (opcional)" class="todolist-input-descricao" rows="2"></textarea>
-                            <div class="form-row">
-                                <div class="form-field">
-                                    <label class="form-label">Data de Vencimento:</label>
-                                    <input type="date" v-model="novaTarefa.dataVencimento" class="todolist-input-date" />
+                        <!-- Fieldset com legend -->
+                        <fieldset class="form-fieldset">
+                            <legend id="form-title" class="form-legend">
+                                Adicionar Nova Tarefa
+                            </legend>
+                            <p id="form-description" class="sr-only">
+                                Preencha os campos abaixo para criar uma nova tarefa. O título é obrigatório.
+                            </p>
+                            
+                            <div class="form-inputs">
+                                <!-- Campo Título (obrigatório) -->
+                                <div class="form-group">
+                                    <label for="task-title" class="form-label">
+                                        Título da Tarefa
+                                        <span class="required-indicator" aria-label="obrigatório">*</span>
+                                    </label>
+                                    <input 
+                                        id="task-title"
+                                        type="text" 
+                                        v-model="novaTarefa.titulo" 
+                                        class="todolist-input-titulo"
+                                        required
+                                        aria-required="true"
+                                        :aria-invalid="tituloError ? 'true' : 'false'"
+                                        :aria-describedby="tituloError ? 'title-error' : null"
+                                        @blur="validarTitulo"
+                                        @input="limparErroTitulo"
+                                        placeholder="Digite o título da tarefa"
+                                    />
+                                    <div v-if="tituloError" 
+                                         id="title-error" 
+                                         role="alert" 
+                                         class="error-message">
+                                        {{ tituloError }}
+                                    </div>
                                 </div>
-                                <div class="form-field">
-                                    <label class="form-label">Prioridade:</label>
-                                    <select v-model="novaTarefa.prioridade" class="todolist-input-select">
-                                        <option value="baixa">Baixa</option>
-                                        <option value="media">Média</option>
-                                        <option value="alta">Alta</option>
-                                    </select>
+
+                                <!-- Campo Descrição (opcional) -->
+                                <div class="form-group">
+                                    <label for="task-description" class="form-label">
+                                        Descrição (opcional)
+                                    </label>
+                                    <textarea 
+                                        id="task-description"
+                                        v-model="novaTarefa.descricao" 
+                                        class="todolist-input-descricao" 
+                                        rows="2"
+                                        aria-required="false"
+                                        placeholder="Digite uma descrição opcional para a tarefa"
+                                    ></textarea>
                                 </div>
+
+                                <div class="form-row">
+                                    <!-- Campo Data de Vencimento -->
+                                    <div class="form-field">
+                                        <label for="task-due-date" class="form-label">
+                                            Data de Vencimento:
+                                        </label>
+                                        <input 
+                                            id="task-due-date"
+                                            type="date" 
+                                            v-model="novaTarefa.dataVencimento" 
+                                            class="todolist-input-date"
+                                            aria-required="false"
+                                        />
+                                    </div>
+
+                                    <!-- Campo Prioridade -->
+                                    <div class="form-field">
+                                        <label for="task-priority" class="form-label">
+                                            Prioridade:
+                                        </label>
+                                        <select 
+                                            id="task-priority"
+                                            v-model="novaTarefa.prioridade" 
+                                            class="todolist-input-select"
+                                            aria-required="false"
+                                        >
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Botão de submit -->
+                                <BotaoUniversal 
+                                    type="submit" 
+                                    variante="bottom"
+                                    icone="/images/plus.png" 
+                                    alt-icone="Adicionar"
+                                >
+                                    Adicionar Tarefa
+                                </BotaoUniversal>
                             </div>
-                            <BotaoUniversal 
-                                type="submit" 
-                                variante="bottom"
-                                icone="/images/plus.png" 
-                                alt-icone="Adicionar"
-                            >
-                                Adicionar Tarefa
-                            </BotaoUniversal>
-                        </div>
+                        </fieldset>
                     </form>
                 </div>
 
@@ -55,7 +130,29 @@
                         Nenhuma tarefa adicionada ainda.
                     </div>
                     
-                    <div v-for="tarefa in tarefasFiltradas" :key="tarefa.id" class="todolist-tarefa mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
+                    <!-- Lista semântica de tarefas -->
+                    <section 
+                        role="region" 
+                        aria-labelledby="tasks-heading"
+                        aria-describedby="tasks-summary">
+                        
+                        <h2 id="tasks-heading" class="tasks-section-title sr-only">
+                            Lista de Tarefas
+                        </h2>
+                        <p id="tasks-summary" class="sr-only">
+                            {{ tarefasFiltradas.length }} tarefa(s) {{ filtros.estado !== 'todas' ? 'filtrada(s) por ' + filtros.estado : 'no total' }}
+                        </p>
+                        
+                        <ul role="list" class="task-list" aria-labelledby="tasks-heading">
+                            <li v-for="tarefa in tarefasFiltradas" 
+                                :key="tarefa.id" 
+                                role="listitem"
+                                :aria-labelledby="`task-title-${tarefa.id}`"
+                                :aria-describedby="[
+                                    tarefa.descricao ? `task-description-${tarefa.id}` : null,
+                                    (tarefa.data_vencimento || tarefa.prioridade) ? `task-meta-${tarefa.id}` : null
+                                ].filter(Boolean).join(' ') || undefined"
+                                class="todolist-tarefa mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
                         <!-- Visualização normal -->
                         <div v-if="!tarefa.editando" class="flex items-center justify-between w-full gap-3">
                             <div class="flex items-start gap-3 flex-1">
@@ -67,6 +164,7 @@
                                 />
                                 <div class="tarefa-conteudo flex-1">
                                     <h3 
+                                        :id="`task-title-${tarefa.id}`"
                                         class="tarefa-titulo cursor-pointer" 
                                         :class="{ 'line-through opacity-60': tarefa.concluida }"
                                         @click="mostrarDetalhes(tarefa)"
@@ -75,13 +173,16 @@
                                     </h3>
                                     <p 
                                         v-if="tarefa.descricao" 
+                                        :id="`task-description-${tarefa.id}`"
                                         class="tarefa-descricao cursor-pointer"
                                         :class="{ 'line-through opacity-60': tarefa.concluida }"
                                         @click="mostrarDetalhes(tarefa)"
                                     >
                                         {{ tarefa.descricao }}
                                     </p>
-                                    <div v-if="tarefa.data_vencimento || tarefa.prioridade" class="tarefa-meta">
+                                    <div v-if="tarefa.data_vencimento || tarefa.prioridade" 
+                                         :id="`task-meta-${tarefa.id}`"
+                                         class="tarefa-meta">
                                         <span v-if="tarefa.data_vencimento" class="vencimento" :class="{ 'vencida': isVencida(tarefa.data_vencimento), 'vence-hoje': venceHoje(tarefa.data_vencimento) }">
                                             📅 {{ formatarData(tarefa.data_vencimento) }}
                                         </span>
@@ -161,8 +262,10 @@
                                 />
                             </div>
                         </div>
+                    </li>
+                        </ul>
+                    </section>
                     </div>
-                </div>
                 </div>
 
                 <!-- Modal de Detalhes -->
@@ -204,6 +307,9 @@ export default {
             tarefaSelecionada: null,
             mostrarModalDetalhes: false,
             
+            // Sistema de validação simplificado
+            tituloError: '',
+            
             filtros: {
             estado: 'todas', 
             prioridade: 'todas', 
@@ -225,7 +331,12 @@ export default {
         },
 
         async adicionarTarefa() {
-            if (!this.novaTarefa.titulo.trim()) return;
+            // Validação simples
+            if (!this.novaTarefa.titulo.trim()) {
+                this.tituloError = 'O título da tarefa é obrigatório.';
+                document.getElementById('task-title').focus();
+                return;
+            }
 
             try {
                 const response = await fetch('/api/tarefas', {
@@ -245,7 +356,9 @@ export default {
                 if (response.ok) {
                     const novaTarefa = await response.json();
                     this.tarefas.unshift(novaTarefa);
+                    // Reset simples
                     this.novaTarefa = { titulo: '', descricao: '', dataVencimento: '', prioridade: 'media' };
+                    this.tituloError = '';
                 }
             } catch (error) {
                 console.error('Erro ao adicionar tarefa:', error);
@@ -465,6 +578,23 @@ export default {
         }
         
         return resultado;
+    },
+
+    // Métodos de validação simplificados
+    validarTitulo() {
+        if (!this.novaTarefa.titulo.trim()) {
+            this.tituloError = 'O título da tarefa é obrigatório.';
+        } else if (this.novaTarefa.titulo.trim().length < 3) {
+            this.tituloError = 'O título deve ter pelo menos 3 caracteres.';
+        } else {
+            this.tituloError = '';
+        }
+    },
+
+    limparErroTitulo() {
+        if (this.tituloError) {
+            this.tituloError = '';
+        }
     }
 }
 }

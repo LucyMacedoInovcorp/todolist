@@ -13,6 +13,7 @@ Bem-vindo à documentação completa do projeto TodoList API! Aqui você encontr
 - **[Estrutura do Projeto](ESTRUTURA.md)** - Organização de pastas e arquivos
 - **[Documentação da API](API.md)** - Endpoints, parâmetros e exemplos
 - **[Guia de Testes](TESTES.md)** - Como executar e criar novos testes
+- **[Melhorias de Acessibilidade](ACESSIBILIDADE_MELHORIAS.md)** - Status e implementações WCAG 2.1
 
 ## 🎯 Para Diferentes Personas
 
@@ -41,6 +42,7 @@ Para entender funcionalidades:
 1. [README](../README.md) - Funcionalidades gerais
 2. [Documentação da API](API.md) - Detalhes dos recursos
 3. [Guia de Testes](TESTES.md) - Cobertura e cenários
+4. [Acessibilidade](ACESSIBILIDADE_MELHORIAS.md) - Status WCAG e conformidade
 
 ## 🚀 Guia Rápido de 5 Minutos
 
@@ -105,6 +107,7 @@ curl http://localhost:8000/api/tarefas
 | **Usar os endpoints** | [API.md](API.md) |
 | **Entender o código** | [ESTRUTURA.md](ESTRUTURA.md) |
 | **Executar testes** | [TESTES.md](TESTES.md) |
+| **Acessibilidade WCAG** | [ACESSIBILIDADE_MELHORIAS.md](ACESSIBILIDADE_MELHORIAS.md) |
 | **Visão geral** | [README.md](../README.md) |
 
 ## 🔄 Mantendo a Documentação Atualizada
@@ -122,6 +125,15 @@ Ao adicionar uma nova funcionalidade, atualize:
 2. **API.md** - Documente novos endpoints
 3. **ESTRUTURA.md** - Se houver novos arquivos/pastas
 4. **TESTES.md** - Se houver novos testes
+5. **ACESSIBILIDADE_MELHORIAS.md** - Se impactar acessibilidade
+
+### Atualizações de Acessibilidade
+
+Sempre que implementar melhorias de acessibilidade:
+1. ✅ Marque itens concluídos no checklist
+2. 📊 Atualize percentual de progresso WCAG
+3. 🧪 Documente novos testes realizados
+4. 📝 Adicione exemplos de código implementado
 
 
 

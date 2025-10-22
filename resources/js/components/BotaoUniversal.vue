@@ -7,12 +7,18 @@
         :class="classes"
         :title="titulo"
         :disabled="disabled"
+        :aria-label="ariaLabel || titulo"
+        :aria-describedby="ariaDescribedby"
+        :tabindex="computedTabIndex"
         @click="handleClick"
+        @keydown.enter="handleKeydown"
+        @keydown.space="handleKeydown"
     >
         <img 
             v-if="icone" 
             :src="icone" 
             :alt="altIcone" 
+            :aria-hidden="apenasIcone ? 'false' : 'true'"
             class="w-3 h-3" 
             :class="{ 'mr-2': $slots.default && !apenasIcone, 'icon-destaque': apenasIcone }"
         >
@@ -69,12 +75,27 @@ export default {
         apenasIcone: {
             type: Boolean,
             default: false
+        },
+        // Props de acessibilidade
+        ariaLabel: {
+            type: String,
+            default: ''
+        },
+        ariaDescribedby: {
+            type: String,
+            default: ''
         }
     },
     emits: ['click'],
     computed: {
         elementType() {
             return this.apenasIcone ? 'a' : 'button';
+        },
+        
+        computedTabIndex() {
+            // Se estiver desabilitado, não pode ser focado
+            if (this.disabled) return -1;
+            return 0;
         },
         
         classes() {
@@ -91,6 +112,16 @@ export default {
                 event.preventDefault();
             }
             this.$emit('click', event);
+        },
+        
+        handleKeydown(event) {
+            // Suporte para navegação por teclado (Enter e Space)
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                if (!this.disabled) {
+                    this.handleClick(event);
+                }
+            }
         },
         
         getBotaoClasses() {
@@ -349,5 +380,35 @@ export default {
 /* Ícone com destaque */
 .icon-destaque {
     transition: all 0.2s;
+}
+
+/* Otimizações para mobile - Limitar hover effects */
+@media (max-width: 768px) {
+    .botao-base:hover:not(.botao-disabled) {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .botao-warning:hover:not(.botao-disabled) {
+        transform: none !important;
+        box-shadow: none !important;
+        background-color: #fde68a;
+        color: #78350f;
+        border-color: #e5e7eb;
+    }
+    
+    .botao-bottom:hover:not(.botao-disabled) {
+        transform: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    /* Remove todos os transform e box-shadow em mobile para prevenir overflow */
+    .botao-base, .botao-primary, .botao-secondary, .botao-success, 
+    .botao-danger, .botao-warning, .botao-bottom,
+    .botao-subtle-success, .botao-subtle-danger {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
 }
 </style>

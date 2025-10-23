@@ -1,0 +1,14 @@
+# Arquivos de teste e desenvolvimento
+tests/
+phpunit.xml
+.env.testing
+Pest.php
+.phpunit.result.cache
+
+# Documentação
+docs/
+README.md
+
+# Configurações locais
+.editorconfig
+.vscode/

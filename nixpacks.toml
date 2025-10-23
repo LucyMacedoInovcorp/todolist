@@ -3,8 +3,8 @@ nixPkgs = ['php82', 'nodejs', 'npm', 'composer']
 
 [phases.install]
 cmds = [
-    'rm -rf tests/ phpunit.xml .env.testing Pest.php',
-    'composer install --optimize-autoloader --no-dev --no-interaction --no-scripts',
+    'rm -rf tests/ phpunit.xml .env.testing Pest.php composer.lock',
+    'composer install --optimize-autoloader --no-dev --no-interaction --no-scripts --ignore-platform-reqs',
     'npm ci --production',
     'npm run build'
 ]

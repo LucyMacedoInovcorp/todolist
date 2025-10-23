@@ -1,0 +1,14 @@
+# Excluir arquivos de desenvolvimento do build
+tests/
+.phpunit.result.cache
+phpunit.xml
+Pest.php
+.env.testing
+
+# Outros arquivos desnecessários para produção
+node_modules/
+.git/
+.gitignore
+.editorconfig
+README.md
+docs/

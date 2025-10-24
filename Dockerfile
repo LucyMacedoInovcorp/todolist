@@ -10,8 +10,12 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    nodejs \
-    npm
+    ca-certificates \
+    gnupg
+
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -32,9 +36,9 @@ COPY composer.json composer.json
 RUN rm -f composer.lock && \
     composer install --optimize-autoloader --no-dev --no-interaction --no-scripts --ignore-platform-reqs
 
-# Copy package files and install Node dependencies
+# Copy package files and install Node dependencies (including dev for building)
 COPY package*.json ./
-RUN npm ci --production
+RUN npm ci
 
 # Copy application code
 COPY . .
@@ -44,6 +48,9 @@ RUN rm -rf tests/ phpunit.xml .env.testing Pest.php .phpunit.result.cache docs/ 
 
 # Build assets
 RUN npm run build
+
+# Remove node_modules to save space (keeping only built assets)
+RUN rm -rf node_modules
 
 # Create Laravel directories and set permissions
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} \

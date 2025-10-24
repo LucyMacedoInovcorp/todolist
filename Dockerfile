@@ -56,6 +56,7 @@ RUN npm run build
 RUN rm -rf node_modules
 
 # Create .env for production
+<<<<<<< HEAD
 RUN echo 'APP_NAME="ToDo List"' > .env && \
     echo 'APP_ENV=production' >> .env && \
     echo 'APP_KEY=' >> .env && \
@@ -78,6 +79,9 @@ RUN echo 'APP_NAME="ToDo List"' > .env && \
     echo 'DB_CONNECTION=sqlite' >> .env && \
     echo 'DB_DATABASE=/app/database/database.sqlite' >> .env && \
     echo 'MAIL_MAILER=log' >> .env && \
+=======
+RUN cp .env.production .env && \
+>>>>>>> bab0c82bebecf0710de963724b9d4f16c31fecef
     php artisan key:generate && \
     touch database/database.sqlite && \
     php artisan migrate --force

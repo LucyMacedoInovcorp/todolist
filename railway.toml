@@ -4,7 +4,6 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 healthcheckPath = "/"
-healthcheckTimeout = 600
-startCommand = "frankenphp run --config /etc/caddy/Caddyfile"
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

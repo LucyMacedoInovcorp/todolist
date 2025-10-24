@@ -1,5 +1,5 @@
-# Use PHP 8.2 com FrankenPHP
-FROM dunglas/frankenphp:php8.2-bookworm
+# Use PHP 8.2 oficial
+FROM php:8.2-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -8,10 +8,13 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
     ca-certificates \
-    gnupg
+    gnupg \
+    sqlite3 \
+    libsqlite3-dev
 
 # Install Node.js 20.x
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
@@ -21,7 +24,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo pdo_sqlite mbstring zip exif pcntl bcmath gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -42,9 +45,6 @@ RUN npm ci
 
 # Copy application code
 COPY . .
-
-# Copy Caddyfile
-COPY Caddyfile /etc/caddy/Caddyfile
 
 # Remove test files and development artifacts
 RUN rm -rf tests/ phpunit.xml .env.testing Pest.php .phpunit.result.cache docs/ README.md .editorconfig .vscode/
@@ -86,14 +86,17 @@ RUN echo 'APP_NAME="ToDo List"' > .env && \
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} \
     storage/logs \
     bootstrap/cache && \
-    chmod -R 775 storage bootstrap/cache && \
-    chown -R www-data:www-data /app/storage /app/bootstrap/cache
+    chmod -R 777 storage bootstrap/cache
 
 # Optimize Laravel (skip caching as we don't have DB connection yet)
 RUN php artisan optimize
 
-# Expose port 80 (FrankenPHP default)
-EXPOSE 80
+# Expose port 8000
+EXPOSE 8000
 
-# Start FrankenPHP
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+# Create a simple start script
+RUN echo '#!/bin/bash\nphp artisan serve --host=0.0.0.0 --port=8000' > /start.sh && \
+    chmod +x /start.sh
+
+# Start Laravel development server
+CMD ["/start.sh"]

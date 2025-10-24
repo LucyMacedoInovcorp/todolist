@@ -43,6 +43,9 @@ RUN npm ci
 # Copy application code
 COPY . .
 
+# Copy Caddyfile
+COPY Caddyfile /etc/caddy/Caddyfile
+
 # Remove test files and development artifacts
 RUN rm -rf tests/ phpunit.xml .env.testing Pest.php .phpunit.result.cache docs/ README.md .editorconfig .vscode/
 
@@ -52,20 +55,24 @@ RUN npm run build
 # Remove node_modules to save space (keeping only built assets)
 RUN rm -rf node_modules
 
+# Create .env for production
+RUN cp .env.production .env && \
+    php artisan key:generate && \
+    touch database/database.sqlite && \
+    php artisan migrate --force
+
 # Create Laravel directories and set permissions
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} \
     storage/logs \
     bootstrap/cache && \
-    chmod -R 775 storage bootstrap/cache
+    chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-# Optimize Laravel
-RUN php artisan optimize && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+# Optimize Laravel (skip caching as we don't have DB connection yet)
+RUN php artisan optimize
 
-# Expose port
-EXPOSE 8000
+# Expose port 80 (FrankenPHP default)
+EXPOSE 80
 
-# Start command
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Start FrankenPHP
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

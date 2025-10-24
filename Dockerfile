@@ -94,9 +94,18 @@ RUN php artisan optimize
 # Expose port 8000
 EXPOSE 8000
 
-# Create a simple start script
-RUN echo '#!/bin/bash\nphp artisan serve --host=0.0.0.0 --port=8000' > /start.sh && \
+# Create a comprehensive start script
+RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'set -e' >> /start.sh && \
+    echo 'echo "Starting Laravel application..."' >> /start.sh && \
+    echo 'echo "Current directory: $(pwd)"' >> /start.sh && \
+    echo 'echo "PHP version: $(php --version)"' >> /start.sh && \
+    echo 'echo "Laravel version: $(php artisan --version)"' >> /start.sh && \
+    echo 'echo "Database file: $(ls -la database/database.sqlite 2>/dev/null || echo "DB file not found")"' >> /start.sh && \
+    echo 'echo "Storage permissions: $(ls -ld storage/)"' >> /start.sh && \
+    echo 'echo "Starting server on 0.0.0.0:8000..."' >> /start.sh && \
+    echo 'exec php artisan serve --host=0.0.0.0 --port=8000 --verbose' >> /start.sh && \
     chmod +x /start.sh
 
-# Start Laravel development server
+# Start Laravel with comprehensive logging
 CMD ["/start.sh"]

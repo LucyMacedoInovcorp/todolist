@@ -4,6 +4,7 @@ tests/
 phpunit.xml
 Pest.php
 .env.testing
+composer.lock
 
 # Outros arquivos desnecessários para produção
 node_modules/
@@ -12,3 +13,6 @@ node_modules/
 .editorconfig
 README.md
 docs/
+.vscode/
+nixpacks.toml
+.railwayignore
